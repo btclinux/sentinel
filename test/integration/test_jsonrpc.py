@@ -32,7 +32,8 @@ def test_anond():
     # assert dashd.rpc_command is not None
     creds = AnonConfig.get_rpc_creds(config_text, network)
     dashd = AnonDaemon(**creds)
-    assert anon.rpc_command is not None
+    assert anond.rpc_command is not None
+    
     assert hasattr(anond, 'rpc_connection')
 
     # Anon testnet block 0 hash == 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c

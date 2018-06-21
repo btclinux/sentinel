@@ -8,27 +8,27 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../../
 
 
 # Proposal model
-@pytest.fixture
-def proposal():
-    from models import Proposal
-    return Proposal()
+# @pytest.fixture
+# def proposal():
+#     from models import Proposal
+#     return Proposal()
 
 
-def test_proposal(proposal):
-    d = proposal.get_dict()
-    assert isinstance(d, dict)
+# def test_proposal(proposal):
+#     d = proposal.get_dict()
+#     assert isinstance(d, dict)
 
-    fields = [
-        'name',
-        'url',
-        'start_epoch',
-        'end_epoch',
-        'payment_address',
-        'payment_amount',
-    ]
-    fields.sort()
-    sorted_keys = sorted(d.keys())
-    assert sorted_keys == fields
+#     fields = [
+#         'name',
+#         'url',
+#         'start_epoch',
+#         'end_epoch',
+#         'payment_address',
+#         'payment_amount',
+#     ]
+#     fields.sort()
+#     sorted_keys = sorted(d.keys())
+#     assert sorted_keys == fields
 
 
 # GovernanceObject model

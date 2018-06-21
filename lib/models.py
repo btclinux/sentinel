@@ -12,7 +12,8 @@ from peewee import IntegerField, CharField, TextField, ForeignKeyField, DecimalF
 import peewee
 import playhouse.signals
 import misc
-import dashd
+# import dashd
+import anond
 from misc import (printdbg, is_numeric)
 import config
 from bitcoinrpc.authproxy import JSONRPCException
@@ -29,11 +30,11 @@ db.connect()
 
 
 # TODO: lookup table?
-DASHD_GOVOBJ_TYPES = {
-    'proposal': 1,
-    'superblock': 2,
-    'watchdog': 3,
-}
+# DASHD_GOVOBJ_TYPES = {
+#     'proposal': 1,
+#     'superblock': 2,
+#     'watchdog': 3,
+# }
 
 # schema version follows format 'YYYYMMDD-NUM'.
 #
@@ -600,36 +601,43 @@ class Watchdog(BaseModel, GovernanceClass):
     created_at = IntegerField()
     object_hash = CharField(max_length=64)
 
-    govobj_type = DASHD_GOVOBJ_TYPES['watchdog']
+    # govobj_type = DASHD_GOVOBJ_TYPES['watchdog']
+    govobj_type = ANOND_GOVOBJ_TYPES['watchdog']
     only_masternode_can_submit = True
 
     @classmethod
-    def active(self, dashd):
+    # def active(self, dashd):
+    def active(self, anond):
         now = int(time.time())
         resultset = self.select().where(
-            self.created_at >= (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+            # self.created_at >= (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+            self.created_at >= (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
         )
         return resultset
 
     @classmethod
-    def expired(self, dashd):
+    # def expired(self, dashd):
+    def expired(self, anond):
         now = int(time.time())
         resultset = self.select().where(
             self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
         )
         return resultset
 
-    def is_expired(self, dashd):
+    # def is_expired(self, dashd):
+    def is_expired(self, anond):
         now = int(time.time())
         return (self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS))
 
-    def is_valid(self, dashd):
+    # def is_valid(self, dashd):
+    def is_valid(self, anond):
         if self.is_expired(dashd):
             return False
 
         return True
 
-    def is_deletable(self, dashd):
+    # def is_deletable(self, dashd):
+    def is_deletable(self, anond):
         if self.is_expired(dashd):
             return True
 
