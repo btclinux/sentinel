@@ -31,15 +31,15 @@ def test_anond():
     # dashd = DashDaemon(**creds)
     # assert dashd.rpc_command is not None
     creds = AnonConfig.get_rpc_creds(config_text, network)
-    anond = AnonDaemon(**creds)
-    assert anond.rpc_command is not None
+    btcpd = AnonDaemon(**creds)
+    assert btcpd.rpc_command is not None
     
-    assert hasattr(anond, 'rpc_connection')
+    assert hasattr(btcpd, 'rpc_connection')
 
     # Anon testnet block 0 hash == 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c
     # test commands without arguments
     # info = dashd.rpc_command('getinfo')
-    info = anond.rpc_command('getinfo')
+    info = btcpd.rpc_command('getinfo')
     info_keys = [
         'blocks',
         'connections',
@@ -57,4 +57,4 @@ def test_anond():
 
     # test commands with args
     # assert dashd.rpc_command('getblockhash', 0) == genesis_hash
-    assert anond.rpc_command('getblockhash', 0) == genesis_hash
+    assert btcpd.rpc_command('getblockhash', 0) == genesis_hash

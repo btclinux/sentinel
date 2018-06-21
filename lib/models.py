@@ -560,9 +560,9 @@ class Setting(BaseModel):
 from playhouse.signals import pre_save
 
 
-@pre_save(sender=Superblock)
-def on_save_handler(model_class, instance, created):
-    instance.sb_hash = instance.hex_hash()
+# @pre_save(sender=Superblock)
+# def on_save_handler(model_class, instance, created):
+#     instance.sb_hash = instance.hex_hash()
 
 
 class Signal(BaseModel):
@@ -596,55 +596,55 @@ class Outcome(BaseModel):
 #         db_table = 'votes'
 
 
-class Watchdog(BaseModel, GovernanceClass):
-    governance_object = ForeignKeyField(GovernanceObject, related_name='watchdogs')
-    created_at = IntegerField()
-    object_hash = CharField(max_length=64)
+# class Watchdog(BaseModel, GovernanceClass):
+#     governance_object = ForeignKeyField(GovernanceObject, related_name='watchdogs')
+#     created_at = IntegerField()
+#     object_hash = CharField(max_length=64)
 
-    # govobj_type = DASHD_GOVOBJ_TYPES['watchdog']
-    govobj_type = ANOND_GOVOBJ_TYPES['watchdog']
-    only_masternode_can_submit = True
+#     # govobj_type = DASHD_GOVOBJ_TYPES['watchdog']
+#     govobj_type = ANOND_GOVOBJ_TYPES['watchdog']
+#     only_masternode_can_submit = True
 
-    @classmethod
-    # def active(self, dashd):
-    def active(self, anond):
-        now = int(time.time())
-        resultset = self.select().where(
-            # self.created_at >= (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
-            self.created_at >= (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
-        )
-        return resultset
+#     @classmethod
+#     # def active(self, dashd):
+#     def active(self, anond):
+#         now = int(time.time())
+#         resultset = self.select().where(
+#             # self.created_at >= (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+#             self.created_at >= (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
+#         )
+#         return resultset
 
-    @classmethod
-    # def expired(self, dashd):
-    def expired(self, anond):
-        now = int(time.time())
-        resultset = self.select().where(
-            self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
-        )
-        return resultset
+#     @classmethod
+#     # def expired(self, dashd):
+#     def expired(self, anond):
+#         now = int(time.time())
+#         resultset = self.select().where(
+#             self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+#         )
+#         return resultset
 
-    # def is_expired(self, dashd):
-    def is_expired(self, anond):
-        now = int(time.time())
-        return (self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS))
+#     # def is_expired(self, dashd):
+#     def is_expired(self, anond):
+#         now = int(time.time())
+#         return (self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS))
 
-    # def is_valid(self, dashd):
-    def is_valid(self, anond):
-        if self.is_expired(dashd):
-            return False
+#     # def is_valid(self, dashd):
+#     def is_valid(self, anond):
+#         if self.is_expired(dashd):
+#             return False
 
-        return True
+#         return True
 
-    # def is_deletable(self, dashd):
-    def is_deletable(self, anond):
-        if self.is_expired(dashd):
-            return True
+#     # def is_deletable(self, dashd):
+#     def is_deletable(self, anond):
+#         if self.is_expired(dashd):
+#             return True
 
-        return False
+#         return False
 
-    class Meta:
-        db_table = 'watchdogs'
+#     class Meta:
+#         db_table = 'watchdogs'
 
 
 class Transient(object):
@@ -748,14 +748,14 @@ def load_db_seeds():
 def db_models():
     """ Return a list of Sentinel DB models. """
     models = [
-        GovernanceObject,
+        # GovernanceObject,
         Setting,
-        Proposal,
-        Superblock,
-        Signal,
-        Outcome,
-        Vote,
-        Watchdog
+        # Proposal,
+        # Superblock,
+        # Signal,
+        # Outcome,
+        # Vote,
+        # Watchdog
     ]
     return models
 
