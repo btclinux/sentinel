@@ -8,12 +8,16 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import config
 
-from dashd import DashDaemon
-from dash_config import DashConfig
+# from dashd import DashDaemon
+# from dash_config import DashConfig
+from anond import AnonDaemon
+from anon_config import AnonConfig
 
 
-def test_dashd():
-    config_text = DashConfig.slurp_config_file(config.dash_conf)
+# def test_dashd():
+def test_anond():
+    # config_text = DashConfig.slurp_config_file(config.dash_conf)
+    config_text = AnonConfig.slurp_config_file(config.anon_conf)
     network = 'mainnet'
     is_testnet = False
     genesis_hash = u'00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6'
@@ -23,15 +27,18 @@ def test_dashd():
             is_testnet = True
             genesis_hash = u'00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c'
 
-    creds = DashConfig.get_rpc_creds(config_text, network)
-    dashd = DashDaemon(**creds)
-    assert dashd.rpc_command is not None
+    # creds = DashConfig.get_rpc_creds(config_text, network)
+    # dashd = DashDaemon(**creds)
+    # assert dashd.rpc_command is not None
+    creds = AnonConfig.get_rpc_creds(config_text, network)
+    dashd = AnonDaemon(**creds)
+    assert anon.rpc_command is not None
+    assert hasattr(anond, 'rpc_connection')
 
-    assert hasattr(dashd, 'rpc_connection')
-
-    # Dash testnet block 0 hash == 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c
+    # Anon testnet block 0 hash == 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c
     # test commands without arguments
-    info = dashd.rpc_command('getinfo')
+    # info = dashd.rpc_command('getinfo')
+    info = anond.rpc_command('getinfo')
     info_keys = [
         'blocks',
         'connections',
@@ -48,4 +55,5 @@ def test_dashd():
     assert info['testnet'] is is_testnet
 
     # test commands with args
-    assert dashd.rpc_command('getblockhash', 0) == genesis_hash
+    # assert dashd.rpc_command('getblockhash', 0) == genesis_hash
+    assert anond.rpc_command('getblockhash', 0) == genesis_hash

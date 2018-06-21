@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 from misc import printdbg
 
 
-class DashConfig():
+class AnonConfig():
 
     @classmethod
     def slurp_config_file(self, filename):
