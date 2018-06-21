@@ -138,7 +138,8 @@ def test_hash_function():
 
 
 def test_blocks_to_seconds():
-    import dashlib
+    # import dashlib
+    import anonlib
     from decimal import Decimal
 
     precision = Decimal('0.001')

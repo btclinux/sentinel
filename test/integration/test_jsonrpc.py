@@ -31,7 +31,7 @@ def test_anond():
     # dashd = DashDaemon(**creds)
     # assert dashd.rpc_command is not None
     creds = AnonConfig.get_rpc_creds(config_text, network)
-    dashd = AnonDaemon(**creds)
+    anond = AnonDaemon(**creds)
     assert anond.rpc_command is not None
     
     assert hasattr(anond, 'rpc_connection')
