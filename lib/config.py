@@ -23,10 +23,10 @@ def get_anon_conf():
 
     # dash_conf = os.path.join(home, ".dashcore/dash.conf")
     # TEMPORARY UNTIL WE SWITCH OVER TO ANON PATHS
-    anon_conf = os.path.join(home, ".btcprivate/btcprivate.conf")
+    anon_conf = os.path.join(home, ".anon/anon.conf")
     if sys.platform == 'darwin':
         # dash_conf = os.path.join(home, "Library/Application Support/DashCore/dash.conf")
-        anon_conf = os.path.join(home, "Library/Application Support/BTCPrivate/btcprivate.conf")
+        anon_conf = os.path.join(home, "Library/Application Support/Anon/anon.conf")
 
     # dash_conf = sentinel_cfg.get('dash_conf', dash_conf)
     anon_conf = sentinel_cfg.get('anon_conf', anon_conf)

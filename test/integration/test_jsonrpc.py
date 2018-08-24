@@ -26,21 +26,21 @@ def test_anond():
         if line.startswith('testnet=1'):
             network = 'testnet'
             is_testnet = True
-            genesis_hash = u'02e0f5cdea6747bdb52ea0f34175d6a5bd6443a0a7fa44890bbbda4df01520c1'
+            genesis_hash = u'01064a94d893deab5198592c9a950be8fdbb9ca7e9d512803a4872e176e116fb'
             # 0x0575f78ee8dc057deee78ef691876e3be29833aaee5e189bb0459c087451305a
     # creds = DashConfig.get_rpc_creds(config_text, network)
     # dashd = DashDaemon(**creds)
     # assert dashd.rpc_command is not None
     creds = AnonConfig.get_rpc_creds(config_text, network)
-    btcpd = AnonDaemon(**creds)
-    assert btcpd.rpc_command is not None
+    anond = AnonDaemon(**creds)
+    assert anond.rpc_command is not None
     
-    assert hasattr(btcpd, 'rpc_connection')
+    assert hasattr(anond, 'rpc_connection')
 
     # Anon testnet block 0 hash == 00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c
     # test commands without arguments
     # info = dashd.rpc_command('getinfo')
-    info = btcpd.rpc_command('getinfo')
+    info = anond.rpc_command('getinfo')
     info_keys = [
         'blocks',
         'connections',
@@ -58,4 +58,4 @@ def test_anond():
 
     # test commands with args
     # assert dashd.rpc_command('getblockhash', 0) == genesis_hash
-    assert btcpd.rpc_command('getblockhash', 0) == genesis_hash
+    assert anond.rpc_command('getblockhash', 0) == genesis_hash
