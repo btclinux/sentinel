@@ -18,6 +18,7 @@ from anon_config import AnonConfig
 def test_anond():
     # config_text = DashConfig.slurp_config_file(config.dash_conf)
     config_text = AnonConfig.slurp_config_file(config.anon_conf)
+    print(config_text)
     network = 'mainnet'
     is_testnet = False
     genesis_hash = u'00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6'
@@ -25,8 +26,8 @@ def test_anond():
         if line.startswith('testnet=1'):
             network = 'testnet'
             is_testnet = True
-            genesis_hash = u'00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c'
-
+            genesis_hash = u'02e0f5cdea6747bdb52ea0f34175d6a5bd6443a0a7fa44890bbbda4df01520c1'
+            # 0x0575f78ee8dc057deee78ef691876e3be29833aaee5e189bb0459c087451305a
     # creds = DashConfig.get_rpc_creds(config_text, network)
     # dashd = DashDaemon(**creds)
     # assert dashd.rpc_command is not None

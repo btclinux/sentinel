@@ -49,7 +49,7 @@ def test_get_rpc_creds():
     assert creds.get('port') == 29241
 
     # dash_config = dash_conf(rpcpassword='s00pers33kr1t', rpcport=8000)
-    anon_config = anon_conf(rpcpassword='s00pers33kr1t', rpcport=8000)
+    anon_config = anon_conf(rpcpassword='s00pers33kr1t', rpcport=12345)
     # creds = DashConfig.get_rpc_creds(dash_config, 'testnet')
     creds = AnonConfig.get_rpc_creds(anon_conf, 'testnet')
 
@@ -57,7 +57,7 @@ def test_get_rpc_creds():
         assert key in creds
     assert creds.get('user') == 'anonrpc'
     assert creds.get('password') == 's00pers33kr1t'
-    assert creds.get('port') == 8000
+    assert creds.get('port') == 12345
 
     no_port_specified = re.sub('\nrpcport=.*?\n', '\n', dash_conf(), re.M)
     # creds = DashConfig.get_rpc_creds(no_port_specified, 'testnet')
@@ -67,7 +67,7 @@ def test_get_rpc_creds():
         assert key in creds
     assert creds.get('user') == 'anonrpc'
     assert creds.get('password') == 'EwJeV3fZTyTVozdECF627BkBMnNDwQaVLakG3A4wXYyk'
-    assert creds.get('port') == 19998
+    assert creds.get('port') == 12345
 
 
 # ensure anon network (mainnet, testnet) matches that specified in config
