@@ -74,7 +74,7 @@ def sentinel_ping(anond):
     printdbg("in sentinel_ping")
 
     # anond.ping()
-    anond.ping()
+    # anond.ping()
 
     printdbg("leaving sentinel_ping")
 
