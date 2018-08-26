@@ -22,7 +22,7 @@ Update system packages and ensure virtualenv is installed:
     $ sudo apt-get update
     $ sudo apt-get -y install python-virtualenv
 
-Make sure the local Dash daemon running is at least version 12.1 (120100)
+Make sure the local ANON daemon running is at least version 12.1 (120100)
 
     $ dash-cli getinfo | grep version
 
@@ -30,7 +30,7 @@ Make sure the local Dash daemon running is at least version 12.1 (120100)
 
 Clone the Sentinel repo and install Python dependencies.
 
-    $ git clone https://github.com/dashpay/sentinel.git && cd sentinel
+    $ git clone https://github.com/anonymousbitcoin/sentinel.git && cd sentinel
     $ virtualenv ./venv
     $ ./venv/bin/pip install -r requirements.txt
 
@@ -56,7 +56,7 @@ With all tests passing and crontab setup, Sentinel will stay in sync with dashd 
 
 An alternative (non-default) path to the `anon.conf` file can be specified in `sentinel.conf`:
 
-    dash_conf=/path/to/dash.conf
+    anon_conf=/path/to/anon.conf
 
 ## Troubleshooting
 
