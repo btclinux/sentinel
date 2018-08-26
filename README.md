@@ -69,3 +69,5 @@ To view debug output, set the `SENTINEL_DEBUG` environment variable to anything 
 ### License
 
 Released under the MIT license, under the same terms as DashCore itself. See [LICENSE](LICENSE) for more info.
+
+### Credits to Dash Core
