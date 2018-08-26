@@ -13,7 +13,8 @@ from decimal import Decimal
 import time
 
 
-class DashDaemon():
+# class DashDaemon():
+class AnonDaemon():
     def __init__(self, **kwargs):
         host = kwargs.get('host', '127.0.0.1')
         user = kwargs.get('user')
@@ -31,10 +32,14 @@ class DashDaemon():
         return AuthServiceProxy("http://{0}:{1}@{2}:{3}".format(*self.creds))
 
     @classmethod
-    def from_dash_conf(self, dash_dot_conf):
-        from dash_config import DashConfig
-        config_text = DashConfig.slurp_config_file(dash_dot_conf)
-        creds = DashConfig.get_rpc_creds(config_text, config.network)
+    # def from_dash_conf(self, dash_dot_conf):
+    def from_anon_conf(self, anon_dot_conf):
+        # from dash_config import DashConfig
+        # config_text = DashConfig.slurp_config_file(dash_dot_conf)
+        # creds = DashConfig.get_rpc_creds(config_text, config.network)
+        from anon_config import AnonConfig
+        config_text = AnonConfig.slurp_config_file(anon_dot_conf)
+        creds = AnonConfig.get_rpc_creds(config_text, config.network)
 
         return self(**creds)
 
@@ -57,7 +62,8 @@ class DashDaemon():
         return golist
 
     def get_current_masternode_vin(self):
-        from dashlib import parse_masternode_status_vin
+        # from dashlib import parse_masternode_status_vin
+        from anonlib import parse_masternode_status_vin
 
         my_vin = None
 
@@ -86,8 +92,8 @@ class DashDaemon():
         return self.governance_info
 
     # governance info convenience methods
-    def superblockcycle(self):
-        return self.govinfo['superblockcycle']
+    # def superblockcycle(self):
+    #     return self.govinfo['superblockcycle']
 
     def governanceminquorum(self):
         return self.govinfo['governanceminquorum']
@@ -95,13 +101,13 @@ class DashDaemon():
     def proposalfee(self):
         return self.govinfo['proposalfee']
 
-    def last_superblock_height(self):
-        height = self.rpc_command('getblockcount')
-        cycle = self.superblockcycle()
-        return cycle * (height // cycle)
+    # def last_superblock_height(self):
+    #     height = self.rpc_command('getblockcount')
+    #     cycle = self.superblockcycle()
+    #     return cycle * (height // cycle)
 
-    def next_superblock_height(self):
-        return self.last_superblock_height() + self.superblockcycle()
+    # def next_superblock_height(self):
+        # return self.last_superblock_height() + self.superblockcycle()
 
     def is_masternode(self):
         return not (self.get_current_masternode_vin() is None)
@@ -125,24 +131,24 @@ class DashDaemon():
             height = self.rpc_command('getblockcount')
         return Decimal(self.rpc_command('getsuperblockbudget', height))
 
-    def next_superblock_max_budget(self):
-        cycle = self.superblockcycle()
-        current_block_height = self.rpc_command('getblockcount')
+    # def next_superblock_max_budget(self):
+    #     cycle = self.superblockcycle()
+    #     current_block_height = self.rpc_command('getblockcount')
 
-        last_superblock_height = (current_block_height // cycle) * cycle
-        next_superblock_height = last_superblock_height + cycle
+    #     last_superblock_height = (current_block_height // cycle) * cycle
+    #     next_superblock_height = last_superblock_height + cycle
 
-        last_allocation = self.get_superblock_budget_allocation(last_superblock_height)
-        next_allocation = self.get_superblock_budget_allocation(next_superblock_height)
+    #     last_allocation = self.get_superblock_budget_allocation(last_superblock_height)
+    #     next_allocation = self.get_superblock_budget_allocation(next_superblock_height)
 
-        next_superblock_max_budget = next_allocation
+    #     next_superblock_max_budget = next_allocation
 
-        return next_superblock_max_budget
+    #     return next_superblock_max_budget
 
     # "my" votes refers to the current running masternode
     # memoized on a per-run, per-object_hash basis
     def get_my_gobject_votes(self, object_hash):
-        import dashlib
+        import anonlib
         if not self.gobject_votes.get(object_hash):
             my_vin = self.get_current_masternode_vin()
             # if we can't get MN vin from output of `masternode status`,
@@ -154,7 +160,7 @@ class DashDaemon():
 
             cmd = ['gobject', 'getcurrentvotes', object_hash, txid, vout_index]
             raw_votes = self.rpc_command(*cmd)
-            self.gobject_votes[object_hash] = dashlib.parse_raw_votes(raw_votes)
+            self.gobject_votes[object_hash] = anonlib.parse_raw_votes(raw_votes)
 
         return self.gobject_votes[object_hash]
 
@@ -178,11 +184,12 @@ class DashDaemon():
         return (current_height >= maturity_phase_start_block)
 
     def we_are_the_winner(self):
-        import dashlib
+        # import dashlib
+        import anonlib
         # find the elected MN vin for superblock creation...
         current_block_hash = self.current_block_hash()
         mn_list = self.get_masternodes()
-        winner = dashlib.elect_mn(block_hash=current_block_hash, mnlist=mn_list)
+        winner = anonlib.elect_mn(block_hash=current_block_hash, mnlist=mn_list)
         my_vin = self.get_current_masternode_vin()
 
         # print "current_block_hash: [%s]" % current_block_hash
@@ -201,7 +208,8 @@ class DashDaemon():
         return (self.MASTERNODE_WATCHDOG_MAX_SECONDS // 2)
 
     def estimate_block_time(self, height):
-        import dashlib
+        # import dashlib
+        import anonlib
         """
         Called by block_height_to_epoch if block height is in the future.
         Call `block_height_to_epoch` instead of this method.
@@ -214,7 +222,8 @@ class DashDaemon():
         if (diff < 0):
             raise Exception("Oh Noes.")
 
-        future_seconds = dashlib.blocks_to_seconds(diff)
+        # future_seconds = dashlib.blocks_to_seconds(diff)
+        future_seconds = anonlib.blocks_to_seconds(diff)
         estimated_epoch = int(time.time() + future_seconds)
 
         return estimated_epoch

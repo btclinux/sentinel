@@ -12,7 +12,8 @@ from peewee import IntegerField, CharField, TextField, ForeignKeyField, DecimalF
 import peewee
 import playhouse.signals
 import misc
-import dashd
+# import anond
+import anond
 from misc import (printdbg, is_numeric)
 import config
 from bitcoinrpc.authproxy import JSONRPCException
@@ -29,9 +30,9 @@ db.connect()
 
 
 # TODO: lookup table?
-DASHD_GOVOBJ_TYPES = {
+ANOND_GOVOBJ_TYPES = {
     'proposal': 1,
-    'superblock': 2,
+    # 'superblock': 2,
     'watchdog': 3,
 }
 
@@ -72,10 +73,10 @@ class GovernanceObject(BaseModel):
     class Meta:
         db_table = 'governance_objects'
 
-    # sync dashd gobject list with our local relational DB backend
+    # sync anond gobject list with our local relational DB backend
     @classmethod
-    def sync(self, dashd):
-        golist = dashd.rpc_command('gobject', 'list')
+    def sync(self, anond):
+        golist = anond.rpc_command('gobject', 'list')
 
         # objects which are removed from the network should be removed from the DB
         try:
@@ -84,7 +85,7 @@ class GovernanceObject(BaseModel):
                 purged.delete_instance(recursive=True, delete_nullable=True)
 
             for item in golist.values():
-                (go, subobj) = self.import_gobject_from_dashd(dashd, item)
+                (go, subobj) = self.import_gobject_from_anond(anond, item)
         except Exception as e:
             printdbg("Got an error upon import: %s" % e)
 
@@ -96,9 +97,9 @@ class GovernanceObject(BaseModel):
         return query
 
     @classmethod
-    def import_gobject_from_dashd(self, dashd, rec):
+    def import_gobject_from_anond(self, anond, rec):
         import decimal
-        import dashlib
+        import anonlib
         import inflection
 
         object_hex = rec['DataHex']
@@ -113,9 +114,9 @@ class GovernanceObject(BaseModel):
             'no_count': rec['NoCount'],
         }
 
-        # shim/dashd conversion
-        object_hex = dashlib.SHIM_deserialise_from_dashd(object_hex)
-        objects = dashlib.deserialise(object_hex)
+        # shim/anond conversion
+        object_hex = anonlib.SHIM_deserialise_from_anond(object_hex)
+        objects = anonlib.deserialise(object_hex)
         subobj = None
 
         obj_type, dikt = objects[0:2:1]
@@ -125,11 +126,11 @@ class GovernanceObject(BaseModel):
         # set object_type in govobj table
         gobj_dict['object_type'] = subclass.govobj_type
 
-        # exclude any invalid model data from dashd...
+        # exclude any invalid model data from anond...
         valid_keys = subclass.serialisable_fields()
         subdikt = {k: dikt[k] for k in valid_keys if k in dikt}
 
-        # get/create, then sync vote counts from dashd, with every run
+        # get/create, then sync vote counts from anond, with every run
         govobj, created = self.get_or_create(object_hash=object_hash, defaults=gobj_dict)
         if created:
             printdbg("govobj created = %s" % created)
@@ -138,19 +139,19 @@ class GovernanceObject(BaseModel):
             printdbg("govobj updated = %d" % count)
         subdikt['governance_object'] = govobj
 
-        # get/create, then sync payment amounts, etc. from dashd - Dashd is the master
+        # get/create, then sync payment amounts, etc. from anond - anond is the master
         try:
             newdikt = subdikt.copy()
             newdikt['object_hash'] = object_hash
             if subclass(**newdikt).is_valid() is False:
-                govobj.vote_delete(dashd)
+                govobj.vote_delete(anond)
                 return (govobj, None)
 
             subobj, created = subclass.get_or_create(object_hash=object_hash, defaults=subdikt)
         except Exception as e:
             # in this case, vote as delete, and log the vote in the DB
-            printdbg("Got invalid object from dashd! %s" % e)
-            govobj.vote_delete(dashd)
+            printdbg("Got invalid object from anond! %s" % e)
+            govobj.vote_delete(anond)
             return (govobj, None)
 
         if created:
@@ -162,9 +163,9 @@ class GovernanceObject(BaseModel):
         # ATM, returns a tuple w/gov attributes and the govobj
         return (govobj, subobj)
 
-    def vote_delete(self, dashd):
+    def vote_delete(self, anond):
         if not self.voted_on(signal=VoteSignals.delete, outcome=VoteOutcomes.yes):
-            self.vote(dashd, VoteSignals.delete, VoteOutcomes.yes)
+            self.vote(anond, VoteSignals.delete, VoteOutcomes.yes)
         return
 
     def get_vote_command(self, signal, outcome):
@@ -172,8 +173,8 @@ class GovernanceObject(BaseModel):
                signal.name, outcome.name]
         return cmd
 
-    def vote(self, dashd, signal, outcome):
-        import dashlib
+    def vote(self, anond, signal, outcome):
+        import anonlib
 
         # At this point, will probably never reach here. But doesn't hurt to
         # have an extra check just in case objects get out of sync (people will
@@ -203,10 +204,10 @@ class GovernanceObject(BaseModel):
 
         vote_command = self.get_vote_command(signal, outcome)
         printdbg(' '.join(vote_command))
-        output = dashd.rpc_command(*vote_command)
+        output = anond.rpc_command(*vote_command)
 
         # extract vote output parsing to external lib
-        voted = dashlib.did_we_vote(output)
+        voted = anonlib.did_we_vote(output)
 
         if voted:
             printdbg('VOTE success, saving Vote object to database')
@@ -214,11 +215,11 @@ class GovernanceObject(BaseModel):
                  object_hash=self.object_hash).save()
         else:
             printdbg('VOTE failed, trying to sync with network vote')
-            self.sync_network_vote(dashd, signal)
+            self.sync_network_vote(anond, signal)
 
-    def sync_network_vote(self, dashd, signal):
+    def sync_network_vote(self, anond, signal):
         printdbg('\tsyncing network vote for object %s with signal %s' % (self.object_hash, signal.name))
-        vote_info = dashd.get_my_gobject_votes(self.object_hash)
+        vote_info = anond.get_my_gobject_votes(self.object_hash)
         for vdikt in vote_info:
             if vdikt['signal'] != signal.name:
                 continue
@@ -268,13 +269,13 @@ class Proposal(GovernanceClass, BaseModel):
     payment_amount = DecimalField(max_digits=16, decimal_places=8)
     object_hash = CharField(max_length=64)
 
-    govobj_type = DASHD_GOVOBJ_TYPES['proposal']
+    govobj_type = ANOND_GOVOBJ_TYPES['proposal']
 
     class Meta:
         db_table = 'proposals'
 
     def is_valid(self):
-        import dashlib
+        import anonlib
 
         printdbg("In Proposal#is_valid, for Proposal: %s" % self.__dict__)
 
@@ -305,7 +306,7 @@ class Proposal(GovernanceClass, BaseModel):
                 return False
 
             # payment address is valid base58 dash addr, non-multisig
-            if not dashlib.is_valid_dash_address(self.payment_address, config.network):
+            if not anonlib.is_valid_anon_address(self.payment_address, config.network):
                 printdbg("\tPayment address [%s] not a valid Dash address for network [%s], returning False" % (self.payment_address, config.network))
                 return False
 
@@ -329,7 +330,7 @@ class Proposal(GovernanceClass, BaseModel):
 
     def is_expired(self, superblockcycle=None):
         from constants import SUPERBLOCK_FUDGE_WINDOW
-        import dashlib
+        import anonlib
 
         if not superblockcycle:
             raise Exception("Required field superblockcycle missing.")
@@ -341,7 +342,7 @@ class Proposal(GovernanceClass, BaseModel):
         # half the SB cycle, converted to seconds
         # add the fudge_window in seconds, defined elsewhere in Sentinel
         expiration_window_seconds = int(
-            (dashlib.blocks_to_seconds(superblockcycle) / 2) +
+            (anonlib.blocks_to_seconds(superblockcycle) / 2) +
             SUPERBLOCK_FUDGE_WINDOW
         )
         printdbg("\texpiration_window_seconds = %s" % expiration_window_seconds)
@@ -364,11 +365,12 @@ class Proposal(GovernanceClass, BaseModel):
         if (self.end_epoch < (misc.now() - thirty_days)):
             return True
 
-        # TBD (item moved to external storage/DashDrive, etc.)
+        # TBD (item moved to external storage/anondrive, etc.)
         return False
 
     @classmethod
-    def approved_and_ranked(self, proposal_quorum, next_superblock_max_budget):
+    # def approved_and_ranked(self, proposal_quorum, next_superblock_max_budget):
+    def approved_and_ranked(self, proposal_quorum):        
         # return all approved proposals, in order of descending vote count
         #
         # we need a secondary 'order by' in case of a tie on vote count, since
@@ -382,7 +384,7 @@ class Proposal(GovernanceClass, BaseModel):
 
         ranked = []
         for proposal in query:
-            proposal.max_budget = next_superblock_max_budget
+            # proposal.max_budget = next_superblock_max_budget
             if proposal.is_valid():
                 ranked.append(proposal)
 
@@ -409,17 +411,17 @@ class Proposal(GovernanceClass, BaseModel):
             return rank
 
     def get_prepare_command(self):
-        import dashlib
-        obj_data = dashlib.SHIM_serialise_for_dashd(self.serialise())
+        import anonlib
+        obj_data = anonlib.SHIM_serialise_for_anond(self.serialise())
 
         # new superblocks won't have parent_hash, revision, etc...
         cmd = ['gobject', 'prepare', '0', '1', str(int(time.time())), obj_data]
 
         return cmd
 
-    def prepare(self, dashd):
+    def prepare(self, anond):
         try:
-            object_hash = dashd.rpc_command(*self.get_prepare_command())
+            object_hash = anond.rpc_command(*self.get_prepare_command())
             printdbg("Submitted: [%s]" % object_hash)
             self.go.object_fee_tx = object_hash
             self.go.save()
@@ -431,127 +433,127 @@ class Proposal(GovernanceClass, BaseModel):
             print("Unable to prepare: %s" % e.message)
 
 
-class Superblock(BaseModel, GovernanceClass):
-    governance_object = ForeignKeyField(GovernanceObject, related_name='superblocks', on_delete='CASCADE', on_update='CASCADE')
-    event_block_height = IntegerField()
-    payment_addresses = TextField()
-    payment_amounts = TextField()
-    proposal_hashes = TextField(default='')
-    sb_hash = CharField()
-    object_hash = CharField(max_length=64)
+# class Superblock(BaseModel, GovernanceClass):
+#     governance_object = ForeignKeyField(GovernanceObject, related_name='superblocks', on_delete='CASCADE', on_update='CASCADE')
+#     event_block_height = IntegerField()
+#     payment_addresses = TextField()
+#     payment_amounts = TextField()
+#     proposal_hashes = TextField(default='')
+#     sb_hash = CharField()
+#     object_hash = CharField(max_length=64)
 
-    govobj_type = DASHD_GOVOBJ_TYPES['superblock']
-    only_masternode_can_submit = True
+#     govobj_type = ANOND_GOVOBJ_TYPES['superblock']
+#     only_masternode_can_submit = True
 
-    class Meta:
-        db_table = 'superblocks'
+#     class Meta:
+#         db_table = 'superblocks'
 
-    def is_valid(self):
-        import dashlib
-        import decimal
+#     def is_valid(self):
+#         import anonlib
+#         import decimal
 
-        printdbg("In Superblock#is_valid, for SB: %s" % self.__dict__)
+#         printdbg("In Superblock#is_valid, for SB: %s" % self.__dict__)
 
-        # it's a string from the DB...
-        addresses = self.payment_addresses.split('|')
-        for addr in addresses:
-            if not dashlib.is_valid_dash_address(addr, config.network):
-                printdbg("\tInvalid address [%s], returning False" % addr)
-                return False
+#         # it's a string from the DB...
+#         addresses = self.payment_addresses.split('|')
+#         for addr in addresses:
+#             if not anonlib.is_valid_dash_address(addr, config.network):
+#                 printdbg("\tInvalid address [%s], returning False" % addr)
+#                 return False
 
-        amounts = self.payment_amounts.split('|')
-        for amt in amounts:
-            if not misc.is_numeric(amt):
-                printdbg("\tAmount [%s] is not numeric, returning False" % amt)
-                return False
+#         amounts = self.payment_amounts.split('|')
+#         for amt in amounts:
+#             if not misc.is_numeric(amt):
+#                 printdbg("\tAmount [%s] is not numeric, returning False" % amt)
+#                 return False
 
-            # no negative or zero amounts allowed
-            damt = decimal.Decimal(amt)
-            if not damt > 0:
-                printdbg("\tAmount [%s] is zero or negative, returning False" % damt)
-                return False
+#             # no negative or zero amounts allowed
+#             damt = decimal.Decimal(amt)
+#             if not damt > 0:
+#                 printdbg("\tAmount [%s] is zero or negative, returning False" % damt)
+#                 return False
 
-        # verify proposal hashes correctly formatted...
-        if len(self.proposal_hashes) > 0:
-            hashes = self.proposal_hashes.split('|')
-            for object_hash in hashes:
-                if not misc.is_hash(object_hash):
-                    printdbg("\tInvalid proposal hash [%s], returning False" % object_hash)
-                    return False
+#         # verify proposal hashes correctly formatted...
+#         if len(self.proposal_hashes) > 0:
+#             hashes = self.proposal_hashes.split('|')
+#             for object_hash in hashes:
+#                 if not misc.is_hash(object_hash):
+#                     printdbg("\tInvalid proposal hash [%s], returning False" % object_hash)
+#                     return False
 
-        # ensure number of payment addresses matches number of payments
-        if len(addresses) != len(amounts):
-            printdbg("\tNumber of payment addresses [%s] != number of payment amounts [%s], returning False" % (len(addresses), len(amounts)))
-            return False
+#         # ensure number of payment addresses matches number of payments
+#         if len(addresses) != len(amounts):
+#             printdbg("\tNumber of payment addresses [%s] != number of payment amounts [%s], returning False" % (len(addresses), len(amounts)))
+#             return False
 
-        printdbg("Leaving Superblock#is_valid, Valid = True")
-        return True
+#         printdbg("Leaving Superblock#is_valid, Valid = True")
+#         return True
 
-    def is_deletable(self):
-        # end_date < (current_date - 30 days)
-        # TBD (item moved to external storage/DashDrive, etc.)
-        pass
+#     def is_deletable(self):
+#         # end_date < (current_date - 30 days)
+#         # TBD (item moved to external storage/anondrive, etc.)
+#         pass
 
-    def hash(self):
-        import dashlib
-        return dashlib.hashit(self.serialise())
+#     def hash(self):
+#         import anonlib
+#         return anonlib.hashit(self.serialise())
 
-    def hex_hash(self):
-        return "%x" % self.hash()
+#     def hex_hash(self):
+#         return "%x" % self.hash()
 
-    # workaround for now, b/c we must uniquely ID a superblock with the hash,
-    # in case of differing superblocks
-    #
-    # this prevents sb_hash from being added to the serialised fields
-    @classmethod
-    def serialisable_fields(self):
-        return [
-            'event_block_height',
-            'payment_addresses',
-            'payment_amounts',
-            'proposal_hashes'
-        ]
+#     # workaround for now, b/c we must uniquely ID a superblock with the hash,
+#     # in case of differing superblocks
+#     #
+#     # this prevents sb_hash from being added to the serialised fields
+#     @classmethod
+#     def serialisable_fields(self):
+#         return [
+#             'event_block_height',
+#             'payment_addresses',
+#             'payment_amounts',
+#             'proposal_hashes'
+#         ]
 
-    # has this masternode voted to fund *any* superblocks at the given
-    # event_block_height?
-    @classmethod
-    def is_voted_funding(self, ebh):
-        count = (self.select()
-                 .where(self.event_block_height == ebh)
-                 .join(GovernanceObject)
-                 .join(Vote)
-                 .join(Signal)
-                 .switch(Vote)  # switch join query context back to Vote
-                 .join(Outcome)
-                 .where(Vote.signal == VoteSignals.funding)
-                 .where(Vote.outcome == VoteOutcomes.yes)
-                 .count())
-        return count
+#     # has this masternode voted to fund *any* superblocks at the given
+#     # event_block_height?
+#     @classmethod
+#     def is_voted_funding(self, ebh):
+#         count = (self.select()
+#                  .where(self.event_block_height == ebh)
+#                  .join(GovernanceObject)
+#                  .join(Vote)
+#                  .join(Signal)
+#                  .switch(Vote)  # switch join query context back to Vote
+#                  .join(Outcome)
+#                  .where(Vote.signal == VoteSignals.funding)
+#                  .where(Vote.outcome == VoteOutcomes.yes)
+#                  .count())
+#         return count
 
-    @classmethod
-    def latest(self):
-        try:
-            obj = self.select().order_by(self.event_block_height).desc().limit(1)[0]
-        except IndexError as e:
-            obj = None
-        return obj
+#     @classmethod
+#     def latest(self):
+#         try:
+#             obj = self.select().order_by(self.event_block_height).desc().limit(1)[0]
+#         except IndexError as e:
+#             obj = None
+#         return obj
 
-    @classmethod
-    def at_height(self, ebh):
-        query = (self.select().where(self.event_block_height == ebh))
-        return query
+#     @classmethod
+#     def at_height(self, ebh):
+#         query = (self.select().where(self.event_block_height == ebh))
+#         return query
 
-    @classmethod
-    def find_highest_deterministic(self, sb_hash):
-        # highest block hash wins
-        query = (self.select()
-                 .where(self.sb_hash == sb_hash)
-                 .order_by(self.object_hash.desc()))
-        try:
-            obj = query.limit(1)[0]
-        except IndexError as e:
-            obj = None
-        return obj
+#     @classmethod
+#     def find_highest_deterministic(self, sb_hash):
+#         # highest block hash wins
+#         query = (self.select()
+#                  .where(self.sb_hash == sb_hash)
+#                  .order_by(self.object_hash.desc()))
+#         try:
+#             obj = query.limit(1)[0]
+#         except IndexError as e:
+#             obj = None
+#         return obj
 
 
 # ok, this is an awkward way to implement these...
@@ -559,9 +561,9 @@ class Superblock(BaseModel, GovernanceClass):
 from playhouse.signals import pre_save
 
 
-@pre_save(sender=Superblock)
-def on_save_handler(model_class, instance, created):
-    instance.sb_hash = instance.hex_hash()
+# @pre_save(sender=Superblock)
+# def on_save_handler(model_class, instance, created):
+#     instance.sb_hash = instance.hex_hash()
 
 
 class Signal(BaseModel):
@@ -600,37 +602,44 @@ class Watchdog(BaseModel, GovernanceClass):
     created_at = IntegerField()
     object_hash = CharField(max_length=64)
 
-    govobj_type = DASHD_GOVOBJ_TYPES['watchdog']
+    # govobj_type = anond_GOVOBJ_TYPES['watchdog']
+    govobj_type = ANOND_GOVOBJ_TYPES['watchdog']
     only_masternode_can_submit = True
 
     @classmethod
-    def active(self, dashd):
+    # def active(self, anond):
+    def active(self, anond):
         now = int(time.time())
         resultset = self.select().where(
-            self.created_at >= (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+            # self.created_at >= (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
+            self.created_at >= (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
         )
         return resultset
 
     @classmethod
-    def expired(self, dashd):
+    # def expired(self, anond):
+    def expired(self, anond):
         now = int(time.time())
         resultset = self.select().where(
-            self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS)
+            self.created_at < (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS)
         )
         return resultset
 
-    def is_expired(self, dashd):
+    # def is_expired(self, anond):
+    def is_expired(self, anond):
         now = int(time.time())
-        return (self.created_at < (now - dashd.SENTINEL_WATCHDOG_MAX_SECONDS))
+        return (self.created_at < (now - anond.SENTINEL_WATCHDOG_MAX_SECONDS))
 
-    def is_valid(self, dashd):
-        if self.is_expired(dashd):
+    # def is_valid(self, anond):
+    def is_valid(self, anond):
+        if self.is_expired(anond):
             return False
 
         return True
 
-    def is_deletable(self, dashd):
-        if self.is_expired(dashd):
+    # def is_deletable(self, anond):
+    def is_deletable(self, anond):
+        if self.is_expired(anond):
             return True
 
         return False
@@ -743,7 +752,7 @@ def db_models():
         GovernanceObject,
         Setting,
         Proposal,
-        Superblock,
+        # Superblock,
         Signal,
         Outcome,
         Vote,

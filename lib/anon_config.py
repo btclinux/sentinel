@@ -7,7 +7,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 from misc import printdbg
 
 
-class DashConfig():
+class AnonConfig():
 
     @classmethod
     def slurp_config_file(self, filename):
@@ -34,7 +34,7 @@ class DashConfig():
         creds = {key: value for (key, value) in match}
 
         # standard Dash defaults...
-        default_port = 9998 if (network == 'mainnet') else 19998
+        default_port = 12345 if (network == 'mainnet') else 33129
 
         # use default port for network if not specified in dash.conf
         if not ('port' in creds):

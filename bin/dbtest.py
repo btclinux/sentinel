@@ -9,10 +9,12 @@ import config
 from models import Superblock, Proposal, GovernanceObject, Setting, Signal, Vote, Outcome, Watchdog
 from models import VoteSignals, VoteOutcomes
 from peewee import PeeweeException  # , OperationalError, IntegrityError
-from dashd import DashDaemon
-import dashlib
+from anond import AnonDaemon
+# import dashlib
+import anonlib
 from decimal import Decimal
-dashd = DashDaemon.from_dash_conf(config.dash_conf)
+# dashd = DashDaemon.from_dash_conf(config.dash_conf)
+anond = AnonDaemon.from_anon_conf(config.anon_conf)
 import misc
 # ==============================================================================
 # do stuff here
@@ -39,7 +41,8 @@ pr = Proposal(
 # also, create the `within_window` or similar method & use that.
 #
 bh = 131112
-bh_epoch = dashd.block_height_to_epoch(bh)
+# bh_epoch = dashd.block_height_to_epoch(bh)
+bh_epoch = anond.block_height_to_epoch(bh)
 
 fudge = 72000
 window_start = 1483689082 - fudge
@@ -59,4 +62,4 @@ else:
 # dashd.get_object_list()
 # ==============================================================================
 # pdb.set_trace()
-1
+# 1
