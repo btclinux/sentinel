@@ -22,9 +22,9 @@ Update system packages and ensure virtualenv is installed:
     $ sudo apt-get update
     $ sudo apt-get -y install python-virtualenv
 
-Make sure the local ANON daemon running is at least version 12.1 (120100)
+Make sure the local ANON daemon running is at least version X (X)
 
-    $ dash-cli getinfo | grep version
+    $ anon-cli getinfo | grep version
 
 ### 2. Install Sentinel
 
@@ -50,7 +50,7 @@ Test the config by runnings all tests from the sentinel folder you cloned into
 
     $ ./venv/bin/py.test ./test
 
-With all tests passing and crontab setup, Sentinel will stay in sync with dashd and the installation is complete
+With all tests passing and crontab setup, Sentinel will stay in sync with anond and the installation is complete
 
 ## Configuration
 
@@ -68,6 +68,6 @@ To view debug output, set the `SENTINEL_DEBUG` environment variable to anything 
 
 ### License
 
-Released under the MIT license, under the same terms as DashCore itself. See [LICENSE](LICENSE) for more info.
+Released under the MIT license, under the same terms as ANONCore itself. See [LICENSE](LICENSE) for more info.
 
 ### Credits to Dash Core
