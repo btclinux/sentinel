@@ -21,7 +21,7 @@ def test_anond():
     print(config_text)
     network = 'mainnet'
     is_testnet = False
-    genesis_hash = u'00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6'
+    genesis_hash = u'0642bbe1cadd962f090093b14cd5cc6c4d7e4c1efcce82bf3c0ac7f2fce12806'
     for line in config_text.split("\n"):
         if line.startswith('testnet=1'):
             network = 'testnet'
@@ -42,15 +42,21 @@ def test_anond():
     # info = dashd.rpc_command('getinfo')
     info = anond.rpc_command('getinfo')
     info_keys = [
-        'blocks',
-        'connections',
-        'difficulty',
-        'errors',
-        'protocolversion',
-        'proxy',
-        'testnet',
-        'timeoffset',
         'version',
+        'protocolversion',
+        'walletversion',
+        'balance',
+        'blocks',
+        'timeoffset',
+        'connections',
+        'proxy',
+        'difficulty',
+        'testnet',
+        'keypoololdest',
+        'keypoolsize',
+        'paytxfee',
+        'relayfee',
+        'errors',
     ]
     for key in info_keys:
         assert key in info

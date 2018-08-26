@@ -54,12 +54,12 @@ class AnonDaemon():
         mnlist = self.rpc_command('masternodelist', 'full')
         return [Masternode(k, v) for (k, v) in mnlist.items()]
 
-    # def get_object_list(self):
-    #     try:
-    #         golist = self.rpc_command('gobject', 'list')
-    #     except JSONRPCException as e:
-    #         golist = self.rpc_command('mnbudget', 'show')
-    #     return golist
+    def get_object_list(self):
+        try:
+            golist = self.rpc_command('gobject', 'list')
+        except JSONRPCException as e:
+            golist = self.rpc_command('mnbudget', 'show')
+        return golist
 
     def get_current_masternode_vin(self):
         # from dashlib import parse_masternode_status_vin
@@ -76,30 +76,30 @@ class AnonDaemon():
 
         return my_vin
 
-    # def governance_quorum(self):
-    #     # TODO: expensive call, so memoize this
-    #     total_masternodes = self.rpc_command('masternode', 'count', 'enabled')
-    #     min_quorum = self.govinfo['governanceminquorum']
+    def governance_quorum(self):
+        # TODO: expensive call, so memoize this
+        total_masternodes = self.rpc_command('masternode', 'count', 'enabled')
+        min_quorum = self.govinfo['governanceminquorum']
 
-    #     # the minimum quorum is calculated based on the number of masternodes
-    #     quorum = max(min_quorum, (total_masternodes // 10))
-    #     return quorum
+        # the minimum quorum is calculated based on the number of masternodes
+        quorum = max(min_quorum, (total_masternodes // 10))
+        return quorum
 
-    # @property
-    # def govinfo(self):
-    #     if (not self.governance_info):
-    #         self.governance_info = self.rpc_command('getgovernanceinfo')
-    #     return self.governance_info
+    @property
+    def govinfo(self):
+        if (not self.governance_info):
+            self.governance_info = self.rpc_command('getgovernanceinfo')
+        return self.governance_info
 
     # governance info convenience methods
     # def superblockcycle(self):
     #     return self.govinfo['superblockcycle']
 
-    # def governanceminquorum(self):
-    #     return self.govinfo['governanceminquorum']
+    def governanceminquorum(self):
+        return self.govinfo['governanceminquorum']
 
-    # def proposalfee(self):
-    #     return self.govinfo['proposalfee']
+    def proposalfee(self):
+        return self.govinfo['proposalfee']
 
     # def last_superblock_height(self):
     #     height = self.rpc_command('getblockcount')
@@ -107,7 +107,7 @@ class AnonDaemon():
     #     return cycle * (height // cycle)
 
     # def next_superblock_height(self):
-    #     return self.last_superblock_height() + self.superblockcycle()
+        # return self.last_superblock_height() + self.superblockcycle()
 
     def is_masternode(self):
         return not (self.get_current_masternode_vin() is None)
@@ -147,41 +147,41 @@ class AnonDaemon():
 
     # "my" votes refers to the current running masternode
     # memoized on a per-run, per-object_hash basis
-    # def get_my_gobject_votes(self, object_hash):
-    #     import dashlib
-    #     if not self.gobject_votes.get(object_hash):
-    #         my_vin = self.get_current_masternode_vin()
-    #         # if we can't get MN vin from output of `masternode status`,
-    #         # return an empty list
-    #         if not my_vin:
-    #             return []
+    def get_my_gobject_votes(self, object_hash):
+        import anonlib
+        if not self.gobject_votes.get(object_hash):
+            my_vin = self.get_current_masternode_vin()
+            # if we can't get MN vin from output of `masternode status`,
+            # return an empty list
+            if not my_vin:
+                return []
 
-    #         (txid, vout_index) = my_vin.split('-')
+            (txid, vout_index) = my_vin.split('-')
 
-    #         cmd = ['gobject', 'getcurrentvotes', object_hash, txid, vout_index]
-    #         raw_votes = self.rpc_command(*cmd)
-    #         self.gobject_votes[object_hash] = dashlib.parse_raw_votes(raw_votes)
+            cmd = ['gobject', 'getcurrentvotes', object_hash, txid, vout_index]
+            raw_votes = self.rpc_command(*cmd)
+            self.gobject_votes[object_hash] = anonlib.parse_raw_votes(raw_votes)
 
-    #     return self.gobject_votes[object_hash]
+        return self.gobject_votes[object_hash]
 
-    # def is_govobj_maturity_phase(self):
-    #     # 3-day period for govobj maturity
-    #     maturity_phase_delta = 1662      # ~(60*24*3)/2.6
-    #     if config.network == 'testnet':
-    #         maturity_phase_delta = 24    # testnet
+    def is_govobj_maturity_phase(self):
+        # 3-day period for govobj maturity
+        maturity_phase_delta = 1662      # ~(60*24*3)/2.6
+        if config.network == 'testnet':
+            maturity_phase_delta = 24    # testnet
 
-    #     event_block_height = self.next_superblock_height()
-    #     maturity_phase_start_block = event_block_height - maturity_phase_delta
+        event_block_height = self.next_superblock_height()
+        maturity_phase_start_block = event_block_height - maturity_phase_delta
 
-    #     current_height = self.rpc_command('getblockcount')
-    #     event_block_height = self.next_superblock_height()
+        current_height = self.rpc_command('getblockcount')
+        event_block_height = self.next_superblock_height()
 
-    #     # print "current_height = %d" % current_height
-    #     # print "event_block_height = %d" % event_block_height
-    #     # print "maturity_phase_delta = %d" % maturity_phase_delta
-    #     # print "maturity_phase_start_block = %d" % maturity_phase_start_block
+        # print "current_height = %d" % current_height
+        # print "event_block_height = %d" % event_block_height
+        # print "maturity_phase_delta = %d" % maturity_phase_delta
+        # print "maturity_phase_start_block = %d" % maturity_phase_start_block
 
-    #     return (current_height >= maturity_phase_start_block)
+        return (current_height >= maturity_phase_start_block)
 
     def we_are_the_winner(self):
         # import dashlib
@@ -189,7 +189,7 @@ class AnonDaemon():
         # find the elected MN vin for superblock creation...
         current_block_hash = self.current_block_hash()
         mn_list = self.get_masternodes()
-        winner = dashlib.elect_mn(block_hash=current_block_hash, mnlist=mn_list)
+        winner = anonlib.elect_mn(block_hash=current_block_hash, mnlist=mn_list)
         my_vin = self.get_current_masternode_vin()
 
         # print "current_block_hash: [%s]" % current_block_hash
