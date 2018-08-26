@@ -1,12 +1,11 @@
-# Dash Sentinel
+# ANON Sentinel
 
-An all-powerful toolset for Dash.
+An all-powerful toolset for ANON.
 
-[![Build Status](https://travis-ci.org/dashpay/sentinel.svg?branch=master)](https://travis-ci.org/dashpay/sentinel)
 
-Sentinel is an autonomous agent for persisting, processing and automating Dash V12.1 governance objects and tasks, and for expanded functions in the upcoming Dash V13 release (Evolution).
+Sentinel is an autonomous agent for persisting, processing and automating ANON governance objects and tasks.
 
-Sentinel is implemented as a Python application that binds to a local version 12.1 dashd instance on each Dash V12.1 Masternode.
+Sentinel is implemented as a Python application that binds to a local version anond instance on each ANON Masternode.
 
 This guide covers installing Sentinel onto an existing 12.1 Masternode in Ubuntu 14.04 / 16.04.
 
@@ -55,7 +54,7 @@ With all tests passing and crontab setup, Sentinel will stay in sync with dashd 
 
 ## Configuration
 
-An alternative (non-default) path to the `dash.conf` file can be specified in `sentinel.conf`:
+An alternative (non-default) path to the `anon.conf` file can be specified in `sentinel.conf`:
 
     dash_conf=/path/to/dash.conf
 
@@ -65,23 +64,7 @@ To view debug output, set the `SENTINEL_DEBUG` environment variable to anything 
 
     $ SENTINEL_DEBUG=1 ./venv/bin/python bin/sentinel.py
 
-## Contributing
 
-Please follow the [DashCore guidelines for contributing](https://github.com/dashpay/dash/blob/v0.12.1.x/CONTRIBUTING.md).
-
-Specifically:
-
-* [Contributor Workflow](https://github.com/dashpay/dash/blob/v0.12.1.x/CONTRIBUTING.md#contributor-workflow)
-
-    To contribute a patch, the workflow is as follows:
-
-    * Fork repository
-    * Create topic branch
-    * Commit patches
-
-    In general commits should be atomic and diffs should be easy to read. For this reason do not mix any formatting fixes or code moves with actual code changes.
-
-    Commit messages should be verbose by default, consisting of a short subject line (50 chars max), a blank line and detailed explanatory text as separate paragraph(s); unless the title alone is self-explanatory (like "Corrected typo in main.cpp") then a single title line is sufficient. Commit messages should be helpful to people reading your code in the future, so explain the reasoning for your decisions. Further explanation [here](http://chris.beams.io/posts/git-commit/).
 
 ### License
 
