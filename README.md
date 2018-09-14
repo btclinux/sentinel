@@ -9,7 +9,14 @@ Sentinel is implemented as a Python application that binds to a local version an
 
 This guide covers installing Sentinel onto an existing 12.1 Masternode in Ubuntu 14.04 / 16.04.
 
-## Installation
+## Quick Setup Script
+
+### 1. For a quick install, run this install script
+
+    $ chmod 777 setup.sh
+    $ ./setup.sh
+
+## Ful  Installation
 
 ### 1. Install Prerequisites
 
