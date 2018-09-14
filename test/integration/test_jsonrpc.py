@@ -21,12 +21,12 @@ def test_anond():
     print(config_text)
     network = 'mainnet'
     is_testnet = False
-    genesis_hash = u'0642bbe1cadd962f090093b14cd5cc6c4d7e4c1efcce82bf3c0ac7f2fce12806'
+    genesis_hash = u'053a237d7ad7106e341a403286604df55bfe6f301fc9fff03a06f81c8c565b34'
     for line in config_text.split("\n"):
         if line.startswith('testnet=1'):
             network = 'testnet'
             is_testnet = True
-            genesis_hash = u'01064a94d893deab5198592c9a950be8fdbb9ca7e9d512803a4872e176e116fb'
+            genesis_hash = u'0411c719ec9d99ce6188074ab174f499d38a8bb009eecec0602e8edd0e55dcfa'
             # 0x0575f78ee8dc057deee78ef691876e3be29833aaee5e189bb0459c087451305a
     # creds = DashConfig.get_rpc_creds(config_text, network)
     # dashd = DashDaemon(**creds)
