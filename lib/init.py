@@ -102,7 +102,7 @@ def main():
         sys.exit(1)
 
     if not has_anon_conf():
-        print("DashCore must be installed and configured, including JSONRPC access in dash.conf")
+        print("Anoncore must be installed and configured, including JSONRPC access in dash.conf")
         sys.exit(1)
 
 
