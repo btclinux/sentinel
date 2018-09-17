@@ -28,6 +28,7 @@ Update system packages and ensure virtualenv is installed:
 
     $ sudo apt-get update
     $ sudo apt-get -y install python-virtualenv
+    $ sudo apt-get install virtualenv
 
 Make sure the local ANON daemon running is at least version X (X)
 
@@ -48,8 +49,10 @@ Set up a crontab entry to call Sentinel every minute:
     $ crontab -e
 
 In the crontab editor, add the lines below, replacing '/home/YOURUSERNAME/sentinel' to the path where you cloned sentinel to:
-
+    PLEASE NOTE: The following will only work if you are signed in as NON-ROOT user. You can check it by using "whoami" command.
     * * * * * cd /home/YOURUSERNAME/sentinel && ./venv/bin/python bin/sentinel.py >/dev/null 2>&1
+    IF you are a ROOT user type the following:
+    * * * * * cd /root/sentinel && ./venv/bin/python bin/sentinel.py >/dev/null 2>&1
 
 ### 4. Test the Configuration
 
