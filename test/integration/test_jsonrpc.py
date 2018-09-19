@@ -26,7 +26,7 @@ def test_anond():
         if line.startswith('testnet=1'):
             network = 'testnet'
             is_testnet = True
-            genesis_hash = u'0411c719ec9d99ce6188074ab174f499d38a8bb009eecec0602e8edd0e55dcfa'
+            genesis_hash = u'07d2dd91f13803386aa0c05afd2adfcc6f911c5571a330a1118f6a0b3e0b2073'
             # 0x0575f78ee8dc057deee78ef691876e3be29833aaee5e189bb0459c087451305a
     # creds = DashConfig.get_rpc_creds(config_text, network)
     # dashd = DashDaemon(**creds)
