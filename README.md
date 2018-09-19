@@ -72,6 +72,11 @@ An alternative (non-default) path to the `anon.conf` file can be specified in `s
 
     anon_conf=/path/to/anon.conf
 
+If you want to use Sentinel on ANON TESTNET, you need to add the following in `sentinel.conf`:
+    
+    #network=mainnet
+    network=testnet
+
 ## Troubleshooting
 
 To view debug output, set the `SENTINEL_DEBUG` environment variable to anything non-zero, then run the script manually:
