@@ -11,6 +11,7 @@ import binascii
 from misc import printdbg, epoch2str
 import time
 
+import config
 
 # def is_valid_dash_address(address, network='mainnet'):
 def is_valid_anon_address(address, network='mainnet'):
@@ -256,8 +257,9 @@ def did_we_vote(output):
     voted = False
     err_msg = ''
 
+    _, conf_filename = os.path.split(config.anon_conf)
     try:
-        detail = output.get('detail').get('anon.conf')
+        detail = output.get('detail').get(conf_filename)
         result = detail.get('result')
         if 'errorMessage' in detail:
             err_msg = detail.get('errorMessage')
