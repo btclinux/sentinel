@@ -1,3 +1,13 @@
+# Official repository here https://github.com/anonymousbitcoin/sentinel
+
+Watchdog expired problem fixed. Thanks to https://github.com/Tetricoins
+
+You should add full path to sentinel.conf in your crontab.
+
+    $ crontab -e
+
+    * * * * * cd /root/sentinel; SENTINEL_CONFIG=/root/sentinel/sentinel.conf && ./venv/bin/python bin/sentinel.py >/dev/null 2>&1
+
 # ANON Sentinel
 
 An all-powerful toolset for ANON.
